@@ -1,6 +1,6 @@
 (* Day 3: Spiral Memory *)
 
-(* Build with 'ocamlopt str.cmxa puzzle.ml -o puzzle' *)
+(* Build with 'ocamlopt puzzle.ml -o puzzle' *)
 (* Run tests with './puzzle test' *)
 (* Run with './puzzle < <input-file>' *)
 
