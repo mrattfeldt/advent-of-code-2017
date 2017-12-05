@@ -1,8 +1,8 @@
 (* Day 2: Corruption Checksum *)
 
-(* Build with 'ocamlopt str.cmxa puzzle.ml -o puzzle' *)
-(* Run tests with './puzzle test' *)
-(* Run with './puzzle < <input-file>' *)
+(* Build with 'ocamlbuild -use-ocamlfind -pkgs str puzzle.native' *)
+(* Run tests with './puzzle.native test' *)
+(* Run with './puzzle.native < <input-file>' *)
 
 open List
 
@@ -19,7 +19,9 @@ let lines_to_data = map (fun line -> map int_of_string (Str.split (Str.regexp "[
 let checksum data =
   let divisor row =
     let ordered = sort compare row in
-    hd (flatten (map (fun a -> (fold_left (fun ack b -> if ack = [] && a <> b && b mod a = 0 then [b/a] else ack) [] ordered)) ordered))
+    hd (flatten (map (fun a ->
+                     (fold_left (fun ack b -> if ack = [] && a <> b && b mod a = 0 then [b/a] else ack)
+                                [] ordered)) ordered))
   in
   fold_left (+) 0 (map divisor data)
 

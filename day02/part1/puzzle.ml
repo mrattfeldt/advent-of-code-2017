@@ -1,8 +1,8 @@
 (* Day 2: Corruption Checksum *)
 
-(* Build with 'ocamlopt str.cmxa puzzle.ml -o puzzle' *)
-(* Run tests with './puzzle test' *)
-(* Run with './puzzle < <input-file>' *)
+(* Build with 'ocamlbuild -use-ocamlfind -pkgs str puzzle.native' *)
+(* Run tests with './puzzle.native test' *)
+(* Run with './puzzle.native < <input-file>' *)
 
 open List
 

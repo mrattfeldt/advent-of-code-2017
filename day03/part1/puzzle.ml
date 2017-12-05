@@ -1,8 +1,8 @@
 (* Day 3: Spiral Memory *)
 
-(* Build with 'ocamlopt puzzle.ml -o puzzle' *)
-(* Run tests with './puzzle test' *)
-(* Run with './puzzle < <input-file>' *)
+(* Build with 'ocamlbuild puzzle.native' *)
+(* Run tests with './puzzle.native test' *)
+(* Run with './puzzle.native < <input-file>' *)
 
 open List
 
