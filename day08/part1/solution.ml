@@ -18,8 +18,8 @@ let rec stream_to_lines stream =
   with Stream.Failure -> []
 
 let op_of_string = function
-    "inc" -> ( + )
-  | "dec" -> ( - )
+    "inc" -> (+)
+  | "dec" -> (-)
   | _     -> raise Error
 
 let rel_of_string = function
@@ -38,15 +38,10 @@ let extract_instructions input =
     match Str.split (Str.regexp "[ \t]+") line with
       [reg; op; amount; _if; creg; rel; cmp] ->
       {reg  = reg;  update = (fun v -> (op_of_string op) v (int_of_string amount));
-       creg = creg; cond   = fun r -> (rel_of_string rel) r (cmp |> int_of_string)}
+       creg = creg; cond   = (fun r -> (rel_of_string rel) r (cmp |> int_of_string))}
     | _ -> raise Error
   in
   (stream_to_lines input) |> List.map ~f:extract_line
-
-let extract_registers instructions =
-  StringMap.of_alist_exn (instructions
-                          |> List.map ~f:(fun instr -> (instr.reg, 0))
-                          |> List.dedup)
 
 let process_and_extract_max_value instructions =
   let process registers instr =

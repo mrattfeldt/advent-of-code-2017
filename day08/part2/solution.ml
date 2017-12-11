@@ -18,8 +18,8 @@ let rec stream_to_lines stream =
   with Stream.Failure -> []
 
 let op_of_string = function
-    "inc" -> ( + )
-  | "dec" -> ( - )
+    "inc" -> (+)
+  | "dec" -> (-)
   | _     -> raise Error
 
 let rel_of_string = function
@@ -38,15 +38,10 @@ let extract_instructions input =
     match Str.split (Str.regexp "[ \t]+") line with
       [reg; op; amount; _if; creg; rel; cmp] ->
       {reg  = reg;  update = (fun v -> (op_of_string op) v (int_of_string amount));
-       creg = creg; cond   = fun r -> (rel_of_string rel) r (cmp |> int_of_string)}
+       creg = creg; cond   = (fun r -> (rel_of_string rel) r (cmp |> int_of_string))}
     | _ -> raise Error
   in
   (stream_to_lines input) |> List.map ~f:extract_line
-
-let extract_registers instructions =
-  StringMap.of_alist_exn (instructions
-                          |> List.map ~f:(fun instr -> (instr.reg, 0))
-                          |> List.dedup)
 
 let process_and_extract_all_max instructions =
   let process (registers, all_max) instr =
@@ -64,8 +59,8 @@ let _ =
   if not !Sys.interactive then
     let instructions =
       extract_instructions (In_channel.input_all In_channel.stdin |> line_stream_of_string) in
-    let max_value = process_and_extract_all_max instructions in
-    print_endline (string_of_int max_value)
+    let all_max = process_and_extract_all_max instructions in
+    print_endline (string_of_int all_max)
 
 (* Test code below *)
 let tests = [(line_stream_of_string ("b inc 5 if a > 1\n"
@@ -80,6 +75,6 @@ let _ =
     let _ =
       List.iter tests (fun (input, expected) ->
                   let instructions = extract_instructions input in
-                  let max_value    = process_and_extract_all_max instructions in
-                  print_endline (if max_value = expected then "PASSED" else "FAILED")) in
+                  let all_max    = process_and_extract_all_max instructions in
+                  print_endline (if all_max = expected then "PASSED" else "FAILED")) in
     print_endline "Running tests...DONE"
