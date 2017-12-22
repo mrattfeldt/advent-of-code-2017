@@ -1,14 +1,12 @@
 (* Day 22: Sportifica Virus *)
 
-(* ocamlbuild -use-ocamlfind -pkgs core -tag thread solution.native *)
+(* ocamlbuild -use-ocamlfind -pkgs batteries solution.native *)
 (* ./solution.native < <input-file> *)
 
-open Core
+open Batteries
 
 module Coord = struct
   type t = int * int
-  let sexp_of_t (x, y) = List.sexp_of_t Int.sexp_of_t [x; y]
-  let t_of_sexp s = match List.t_of_sexp Int.t_of_sexp s with [x;y] -> (x, y) | _ -> failwith "error"
   let compare = Pervasives.compare
 end
 
@@ -39,11 +37,11 @@ let rec do_bursts nbursts state =
   let do_burst state =
     let (grid, virus, pos) = (state.grid, state.virus, state.virus.pos) in
     let (virus1, grid1, count1) =
-      match Grid.find state.grid state.virus.pos |> Option.value ~default:Clean with
-        Clean  -> (turn_left virus, Grid.set grid pos Weak, state.count)
-      | Weak   -> (virus, Grid.set grid pos Infect, succ state.count)
-      | Infect -> (turn_right virus, Grid.set grid pos Flag, state.count)
-      | Flag   -> (reverse virus, Grid.set grid pos Clean, state.count)
+      match Grid.find_default Clean pos grid with
+        Clean  -> (turn_left virus, Grid.add pos Weak grid, state.count)
+      | Weak   -> (virus, Grid.add pos Infect grid, succ state.count)
+      | Infect -> (turn_right virus, Grid.add pos Flag grid, state.count)
+      | Flag   -> (reverse virus, Grid.remove pos grid, state.count)
     in
     {virus = virus1 |> move_forward; grid = grid1; count = count1}
   in
@@ -53,18 +51,25 @@ let rec do_bursts nbursts state =
 let bursts nbursts infected =
   let size = List.length infected in
   let virus = {pos = (size / 2, size / 2); dir = Up} in
-  let grid = List.concat infected |> List.map ~f:(fun p -> (p, Infect)) |> Grid.of_alist_exn in
+  let grid = List.concat infected 
+             |> List.fold_left (fun ack p -> Grid.add p Infect ack) Grid.empty in
   do_bursts nbursts {virus = virus; grid = grid; count = 0}
   
 let row_of_string y row =
   String.to_list row
-  |> List.concat_mapi ~f:(fun x c -> if c = '#' then [(x, y)] else [])
+  |> List.mapi (fun x c -> if c = '#' then [(x, y)] else [])
+  |> List.concat
                       
 let _ =
   if not !Sys.interactive then
+    let rec read_lines () =
+      try let line = IO.read_line IO.stdin in
+          line :: read_lines ()
+      with IO.No_more_input -> []
+    in
     let nbursts = int_of_string Sys.argv.(1) in
-    In_channel.input_lines In_channel.stdin
-    |> List.mapi ~f:row_of_string
+    read_lines ()
+    |> List.mapi row_of_string
     |> bursts nbursts
     |> string_of_int
     |> print_endline
